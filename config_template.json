@@ -1,0 +1,12 @@
+{
+  "discord": {
+    "token": "<your Discord bot's token>",
+    "server_id": "<the Discord server's ID as a string>",
+    "target_catagory": "<the ID (as a string) of the catagory channels should be placed in>",
+    "command_prefix": "?"
+  },
+  "messages": {
+    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:",
+    "user_added": "Welcome USER! to OWNER's channel :clap:"
+  }
+}
