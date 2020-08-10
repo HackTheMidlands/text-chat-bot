@@ -23,13 +23,14 @@ def init():
 
     except OSError:
         mapping = {}
-        logger.warn('↳ No existing state file, starting with blank state - this should only happen on first launch!')
+        logger.warning('↳ No existing state file, starting with blank state - this should only happen on first launch!')
         save()
 
 def save():
     global mapping
 
     logger.debug('Saving state...')
+    logger.warning(mapping)
 
     try:
         os.makedirs(DATA_PATH, exist_ok=True)
@@ -39,20 +40,23 @@ def save():
     except OSError:
         fatal_error(f'↳ Could not save to {MAPPING_PATH}')
 
-def associate_channel(user, channel):
-    logger.debug(f'Associating user \'{user}\' with channel \'{channel.name}\'')
-    mapping[str(user.id)] = str(channel.id)
+def associate_channel(user, channel, channel_type):
+    logger.debug(f"Associating user '{user}' with '{channel_type}' channel '{channel.name}'")
+    if str(user.id) in mapping:
+        mapping[str(user.id)][channel_type] = str(channel.id)
+    else:
+        mapping[str(user.id)] = {channel_type: str(channel.id)}
     save()
 
-def get_channel_id(user):
+def get_channel_id(user, channel_type):
     try:
-        return int(mapping[str(user.id)])
+        return int(mapping[str(user.id)][channel_type])
     except:
         return None
 
-def owner_of_channel(channel):
-    for user, channel_id in mapping.items():
-        if str(channel.id) == channel_id:
+def owner_of_channel(channel, channel_type):
+    for user, channels in mapping.items():
+        if str(channel.id) == channels[channel_type]:
             return int(user)
 
     return None
