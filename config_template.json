@@ -1,8 +1,8 @@
 {
   "discord": {
-    "token": "<your Discord bot's token>",
-    "server_id": "<the Discord server's ID as a string>",
-    "target_catagory": "<the ID (as a string) of the catagory channels should be placed in>",
+    "token": "${TOKEN}",
+    "server_id": "${SERVER_ID}",
+    "target_catagory": "${CATAGORY_ID}",
     "command_prefix": "?"
   },
   "messages": {

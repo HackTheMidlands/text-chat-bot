@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "chat-manager-bot"
+version = "0.1.0"
+description = "Allow users to create private discord channels without requiring server permissions"
+authors = ["Daniel <danielfspencer1@gmail.com>", "Charles de Freitas <charles@defreitas.io>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+"discord.py" = "^1.4.1"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.5.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

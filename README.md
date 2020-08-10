@@ -1,13 +1,19 @@
+# Discord Chat Manager
+
+
 #### Instructions
 1. Run the following commands to setup the environment:
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
-2. Run the following command
+2. Set `TOKEN`, `SERVER_ID` and `CATAGORY_ID` as environment variables either in the [Makefile](./Makefile) then run
 ```bash
-cp config_template.json config.json
+make config
 ```
-The fill in the details in `config.json`
-3. Run the bot using `python -m text-chat`
+3. Run the bot using `make run`
+
+#### Development
+
+1. Make sure you have [reflex](https://github.com/cespare/reflex) installed
+2. Run `make watch` to auto restart when `.py` files are changed
+
