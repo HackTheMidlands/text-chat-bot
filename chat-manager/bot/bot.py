@@ -58,8 +58,8 @@ async def create(ctx):
 
     name = names.gen_name()
     topic = f'{ctx.author}\'s private channel'
-    text_channel = await target_catagory.create_text_channel(name, topic=topic, overwrites=overwrites)
-    voice_channel = await target_catagory.create_voice_channel(name, topic=topic, overwrites=overwrites)
+    text_channel = await target_catagory.create_text_channel(f"🗣{ctx.author}", topic=topic, overwrites=overwrites)
+    voice_channel = await target_catagory.create_voice_channel(f"💬{ctx.author}", topic=topic, overwrites=overwrites)
 
     data.associate_channel(ctx.author, channel=text_channel, channel_type='text')
     data.associate_channel(ctx.author, channel=voice_channel, channel_type='voice')

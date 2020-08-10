@@ -4,10 +4,11 @@ import json
 import logging
 
 from .log import fatal_error
+from . import config
 
 logger = logging.getLogger('text-chat-bot')
 
-DATA_PATH = 'data'
+DATA_PATH = config.config['data']['path']
 MAPPING_PATH = f'{DATA_PATH}/mapping.json'
 
 def init():

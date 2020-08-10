@@ -8,5 +8,8 @@
   "messages": {
     "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:",
     "user_added": "Welcome USER! to OWNER's channel :clap:"
+  },
+  "data": {
+    "path": "${DATA_PATH}"
   }
 }

@@ -3,11 +3,11 @@ import logging
 from .util import log
 log.init()
 
-from .util import data
-data.init()
-
 from .util import config
 config.init()
+
+from .util import data
+data.init()
 
 from .bot import bot
 
