@@ -7,6 +7,7 @@ from ..util import data
 from ..util.log import fatal_error
 from . import lookup
 from . import names
+from . import crud
 
 
 logger = logging.getLogger('text-chat-bot')
@@ -19,6 +20,14 @@ def start():
     global bot
     logger.info("Starting bot...")
     bot.run(config.config['discord']['token'])
+
+
+async def delete_all(guild):
+    ids = list(data.mapping.keys()).copy()
+    for user_id in ids:
+        user = guild.get_member(int(user_id))
+        logger.info(user)
+        await crud.delete(user, guild)
 
 
 @bot.event
@@ -48,34 +57,7 @@ async def create(ctx):
         await ctx.channel.delete_messages([ctx.message])
     else:
         return
-    
-    guild = ctx.guild
-    text_id = data.get_channel_id(ctx.author, 'text')
-    if text_id is not None:
-        await ctx.author.send(f"You're already setup!")
-        return
-    user_category = bot.get_channel(int(config.config['discord']['target_catagory']))
-    # user_category = await guild.create_category(name=f"{ctx.author}'s Space!")
-    # data.associate_channel(ctx.author, user_category, 'group')
-    # await ctx.author.add_roles(user_category)
-
-    overwrites = {
-        guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False),  # everyone
-        guild.me:           discord.PermissionOverwrite(read_messages=True),  # the bot
-        guild.get_role(int(config.config['discord']['member_role_id'])): discord.PermissionOverwrite(read_messages=False, view_channel=True, create_instant_invite=False, connect=False),
-        ctx.author:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
-    }
-
-    # name = names.gen_name()
-    topic = f'{ctx.author}\'s private channel'
-    voice_channel = await user_category.create_voice_channel(f"{ctx.author} 🗣", topic=topic, overwrites=overwrites)
-    text_channel = await user_category.create_text_channel(f"{ctx.author} 💬", topic=topic, overwrites=overwrites)
-
-    data.associate_channel(ctx.author, channel=text_channel, channel_type='text')
-    data.associate_channel(ctx.author, channel=voice_channel, channel_type='voice')
-
-    message = config.config['messages']['channel_start']
-    await text_channel.send(message.replace('OWNER', ctx.message.author.mention))
+    await crud.create(bot, ctx.author, ctx.guild)
 
 @bot.command()
 async def delete(ctx):
@@ -88,10 +70,7 @@ async def delete(ctx):
     if text_id is None:
         await user.send(f"You're not setup!")
         return
-    await ctx.guild.get_channel(data.get_channel_id(user, 'text')).delete()
-    await ctx.guild.get_channel(data.get_channel_id(user, 'voice')).delete()
-    data.delete_user(user)
-
+    await crud.delete(user, ctx.guild)
 
 
 @bot.command()
@@ -156,7 +135,7 @@ async def remove(ctx):
             return
         await remove_from_channel(user=user, channel=text_channel)
         await remove_from_channel(user=user, channel=voice_channel)
-        await user.send(f"You have been removed from {ctx.author.display_name}'s group.")
+        # await user.send(f"You have been removed from {ctx.author.display_name}'s group.")
 
 
 async def add_to_channel(user, channel, channel_type):

@@ -17,21 +17,26 @@ DOCKER_BUILD_ARGS      := $(foreach v,$(MAKE_ENV), --build-arg $(v)='$($(v))' )
 run: config
 	poetry run python -m chat-manager
 
-.PHONY: build-config
-build-config:
-
 .PHONY: config
 config:
 	$(SHELL_EXPORT) envsubst <config_template.json >config.json ;\
 
 .PHONY: watch
 watch:
-	reflex -r '\.py$\' -s -- sh -c 'make run'
+	reflex -r '\.py$\' -s -- sh -c 'make docker-logs'
 
 .PHONY: docker-build
 docker-build: config
 	docker build $(ROOT_DIR) --tag $(DOCKER_IMAGE_DOMAIN) --file $(ROOT_DIR)/Dockerfile $(DOCKER_BUILD_ARGS)
 
 .PHONY: docker-run
-docker-run:
-	docker run --rm $(DOCKER_IMAGE_DOMAIN)
+docker-run: docker-build docker-rm
+	docker run -d --name chat-manager -v $(DOCKER_MOUNT_PATH)/data:/data --restart=unless-stopped $(DOCKER_IMAGE_DOMAIN)
+
+.PHONY: docker-rm
+docker-rm:
+	docker rm -f chat-manager | true
+
+.PHONY: docker-logs
+docker-logs: docker-run
+	docker logs -f chat-manager
