@@ -1,6 +1,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 DATA_PATH       ?= 'data'
-MAKE_ENV        += TOKEN SERVER_ID CATAGORY_ID DATA_PATH
+MAKE_ENV        += TOKEN SERVER_ID CATAGORY_ID COMMAND_CHANNEL_ID MEMBER_ROLE_ID DATA_PATH
 SHELL_EXPORT    := $(foreach v,$(MAKE_ENV),$(v)='$($(v))' )
 
 PACKAGE       ?= bot
@@ -14,7 +14,7 @@ DOCKER_BUILD_ARGS      := $(foreach v,$(MAKE_ENV), --build-arg $(v)='$($(v))' )
 
 
 .PHONY: run
-run:
+run: config
 	poetry run python -m chat-manager
 
 .PHONY: build-config
@@ -29,7 +29,7 @@ watch:
 	reflex -r '\.py$\' -s -- sh -c 'make run'
 
 .PHONY: docker-build
-docker-build:
+docker-build: config
 	docker build $(ROOT_DIR) --tag $(DOCKER_IMAGE_DOMAIN) --file $(ROOT_DIR)/Dockerfile $(DOCKER_BUILD_ARGS)
 
 .PHONY: docker-run

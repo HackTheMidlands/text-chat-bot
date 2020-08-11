@@ -3,10 +3,12 @@
     "token": "${TOKEN}",
     "server_id": "${SERVER_ID}",
     "target_catagory": "${CATAGORY_ID}",
-    "command_prefix": "?"
+    "command_channel": "${COMMAND_CHANNEL_ID}",
+    "command_prefix": "?",
+    "member_role_id": "${MEMBER_ROLE_ID}"
   },
   "messages": {
-    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:",
+    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:\n You also now use the `add` and `remove` commands from here.",
     "user_added": "Welcome USER! to OWNER's channel :clap:"
   },
   "data": {

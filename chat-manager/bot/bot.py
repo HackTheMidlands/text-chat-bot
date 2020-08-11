@@ -11,6 +11,7 @@ from . import names
 
 logger = logging.getLogger('text-chat-bot')
 command_prefix=config.config['discord']['command_prefix']
+commands_channel = int(config.config['discord']['command_channel'])
 bot = commands.Bot(command_prefix=command_prefix)
 
 
@@ -27,6 +28,7 @@ async def on_ready():
     try:
         guild = bot.get_guild(int(server_id))
         assert guild is not None
+        logger.info(f"Logged into {guild}")
     except:
         fatal_error(f'Cannot find server id \'{server_id}\'')
 
@@ -42,24 +44,32 @@ async def on_ready():
 
 @bot.command()
 async def create(ctx):
+    if ctx.channel.id == commands_channel:
+        await ctx.channel.delete_messages([ctx.message])
+    else:
+        return
+    
     guild = ctx.guild
-    role_id = data.get_channel_id(ctx.author, 'role')
-    if role_id is not None:
+    text_id = data.get_channel_id(ctx.author, 'text')
+    if text_id is not None:
         await ctx.author.send(f"You're already setup!")
-    user_role = await guild.create_role(name=f"{ctx.author}'s Space!")
-    data.associate_channel(ctx.author, user_role, 'role')
-    await ctx.author.add_roles(user_role)
+        return
+    user_category = bot.get_channel(int(config.config['discord']['target_catagory']))
+    # user_category = await guild.create_category(name=f"{ctx.author}'s Space!")
+    # data.associate_channel(ctx.author, user_category, 'group')
+    # await ctx.author.add_roles(user_category)
 
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False),  # everyone
         guild.me:           discord.PermissionOverwrite(read_messages=True),  # the bot
-        user_role:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
+        guild.get_role(int(config.config['discord']['member_role_id'])): discord.PermissionOverwrite(read_messages=False, view_channel=True, create_instant_invite=False, connect=False),
+        ctx.author:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
     }
 
-    name = names.gen_name()
+    # name = names.gen_name()
     topic = f'{ctx.author}\'s private channel'
-    text_channel = await target_catagory.create_text_channel(f"🗣{ctx.author}", topic=topic, overwrites=overwrites)
-    voice_channel = await target_catagory.create_voice_channel(f"💬{ctx.author}", topic=topic, overwrites=overwrites)
+    voice_channel = await user_category.create_voice_channel(f"{ctx.author} 🗣", topic=topic, overwrites=overwrites)
+    text_channel = await user_category.create_text_channel(f"{ctx.author} 💬", topic=topic, overwrites=overwrites)
 
     data.associate_channel(ctx.author, channel=text_channel, channel_type='text')
     data.associate_channel(ctx.author, channel=voice_channel, channel_type='voice')
@@ -67,12 +77,33 @@ async def create(ctx):
     message = config.config['messages']['channel_start']
     await text_channel.send(message.replace('OWNER', ctx.message.author.mention))
 
+@bot.command()
+async def delete(ctx):
+    user = ctx.author
+    if ctx.channel.id == commands_channel or ctx.channel.id == data.get_channel_id(user, 'text'):
+        await ctx.channel.delete_messages([ctx.message])
+    else:
+        return
+    text_id = data.get_channel_id(user, 'text')
+    if text_id is None:
+        await user.send(f"You're not setup!")
+        return
+    await ctx.guild.get_channel(data.get_channel_id(user, 'text')).delete()
+    await ctx.guild.get_channel(data.get_channel_id(user, 'voice')).delete()
+    data.delete_user(user)
+
+
 
 @bot.command()
 async def add(ctx):
-    private_role = ctx.guild.get_role(data.get_channel_id(ctx.author, 'role'))
+    if ctx.channel.id == commands_channel or ctx.channel.id == data.get_channel_id(ctx.author, 'text'):
+        await ctx.channel.delete_messages([ctx.message])
+    else:
+        return
+    text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))
+    voice_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'voice'))
 
-    if private_role is None:
+    if text_channel is None:
         await ctx.author.send(f'You do not yet have a role.')
         return
 
@@ -85,11 +116,12 @@ async def add(ctx):
         if user.bot:
             await ctx.author.send(f'You cannot add bots to your channel.')
             return
-        if user in private_role.members:
+        if user in text_channel.members:
             await ctx.author.send(f"'{user.display_name}' is already in your channel.")
             return
 
-        await user.add_roles(private_role)
+        await add_to_channel(user=user, channel=text_channel, channel_type='text')
+        await add_to_channel(user=user, channel=voice_channel, channel_type='voice')
         await user.send(f"You have been added to {ctx.author.display_name}'s channel.")
 
         message = config.config['messages']['user_added']
@@ -99,27 +131,31 @@ async def add(ctx):
 
 @bot.command()
 async def remove(ctx):
-    private_role = ctx.guild.get_role(data.get_channel_id(ctx.author, 'role'))
+    if ctx.channel.id == commands_channel:
+        await ctx.channel.delete_messages([ctx.message])
+    else:
+        return
+    text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))
+    voice_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'voice'))
 
-    if private_role is None:
-        await ctx.author.send(f'You do not yet have a role.')
+    if text_channel is None:
+        await ctx.author.send(f'You do not yet have a channel.')
         return
 
     if ctx.message.mention_everyone:
         await ctx.author.send(f'You cannot use `@everyone` or `@here` to remove people.')
         return
 
-    voice_channel = lookup.get_channel_by_id(data.get_channel_id(ctx.author, 'voice'), ctx.guild)
     for user in ctx.message.mentions:
-        if user not in private_role.members:
+        if user not in text_channel.members:
             await ctx.author.send(f"'{user.display_name}' is not in your group, so cannot be removed.")
             return
 
         if user == ctx.author:
             await ctx.author.send(f'You cannot remove yourself from your own group.')
             return
-        
-        await user.remove_roles(private_role)
+        await remove_from_channel(user=user, channel=text_channel)
+        await remove_from_channel(user=user, channel=voice_channel)
         await user.send(f"You have been removed from {ctx.author.display_name}'s group.")
 
 
@@ -129,7 +165,7 @@ async def add_to_channel(user, channel, channel_type):
     elif channel_type == 'voice':
         overwrite = discord.PermissionOverwrite()
         overwrite.view_channel
-        await channel.set_permissions(user, connect=True, speak=True)
+        await channel.set_permissions(user, view_channel=True, connect=True, speak=True)
 
 async def remove_from_channel(user, channel):
-    await channel.set_permissions(user, read_messages=False)
+    await channel.set_permissions(user, overwrite=None)

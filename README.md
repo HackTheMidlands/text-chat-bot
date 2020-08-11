@@ -6,10 +6,7 @@
 ```bash
 poetry install
 ```
-2. Set `TOKEN`, `SERVER_ID` and `CATAGORY_ID` as environment variables either in the [Makefile](./Makefile) then run
-```bash
-make config
-```
+2. Set `TOKEN`, `SERVER_ID`, `CATAGORY_ID`, `COMMAND_CHANNEL_ID` and `DATA_PATH` either as environment variables or in the [Makefile](./Makefile)
 3. Run the bot using `make run`
 
 #### Development

@@ -49,6 +49,12 @@ def associate_channel(user, channel, channel_type):
         mapping[str(user.id)] = {channel_type: str(channel.id)}
     save()
 
+def delete_user(user):
+    logger.debug(f"Deleting user '{user}'")
+    if str(user.id) in mapping:
+        del mapping[str(user.id)]
+    save()
+
 def get_channel_id(user, channel_type):
     try:
         return int(mapping[str(user.id)][channel_type])
