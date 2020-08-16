@@ -1,5 +1,5 @@
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-DATA_PATH       ?= 'data'
+DATA_PATH       ?= data
 MAKE_ENV        += TOKEN SERVER_ID CATAGORY_ID COMMAND_CHANNEL_ID MEMBER_ROLE_ID DATA_PATH
 SHELL_EXPORT    := $(foreach v,$(MAKE_ENV),$(v)='$($(v))' )
 CONFIG          := $(shell $(SHELL_EXPORT) envsubst <config_template.json)
@@ -27,7 +27,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run: docker-build docker-rm
-	source .bin/build-config.sh && docker run -d --name chat-manager -e CONFIG -v $(DOCKER_MOUNT_PATH)/data:/data --restart=no $(DOCKER_IMAGE_DOMAIN)
+	source ./bin/build-config.sh && docker run -d --name chat-manager -e CONFIG -v $(DOCKER_MOUNT_PATH)/data:/data --restart=no $(DOCKER_IMAGE_DOMAIN)
 
 .PHONY: docker-rm
 docker-rm:
