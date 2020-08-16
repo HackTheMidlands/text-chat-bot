@@ -22,8 +22,6 @@ COPY --from=poetry /poetry/requirements.txt .
 RUN pip install -r /opt/chat-manager/requirements.txt && \
       apk del .build-deps
 
-COPY config.json /opt/chat-manager
-
 COPY . /opt/chat-manager
 
 VOLUME [ "/data" ]

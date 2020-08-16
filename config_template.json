@@ -8,7 +8,7 @@
     "member_role_id": "${MEMBER_ROLE_ID}"
   },
   "messages": {
-    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:\n You also now use the `add` and `remove` commands from here.",
+    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:\n You can add people to this channel with the `?add @person` command in #bots, and once you've added them here, you can remove them with `?remove @person`.",
     "user_added": "Welcome USER! to OWNER's channel :clap:"
   },
   "data": {

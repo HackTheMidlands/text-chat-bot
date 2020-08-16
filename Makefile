@@ -2,6 +2,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 DATA_PATH       ?= 'data'
 MAKE_ENV        += TOKEN SERVER_ID CATAGORY_ID COMMAND_CHANNEL_ID MEMBER_ROLE_ID DATA_PATH
 SHELL_EXPORT    := $(foreach v,$(MAKE_ENV),$(v)='$($(v))' )
+CONFIG          := $(shell $(SHELL_EXPORT) envsubst <config_template.json)
 
 PACKAGE       ?= bot
 DEFAULT_IMAGE ?= hackthemidlands/text-chat-bot
@@ -10,28 +11,23 @@ DOCKER_REGISTRY_DOMAIN ?= docker.pkg.github.com
 DOCKER_REGISTRY_PATH   ?= hackthemidlands/text-chat-bot
 DOCKER_IMAGE           ?= $(DOCKER_REGISTRY_PATH)/$(PACKAGE):$(VERSION)
 DOCKER_IMAGE_DOMAIN    ?= $(DOCKER_REGISTRY_DOMAIN)/$(DOCKER_IMAGE)
-DOCKER_BUILD_ARGS      := $(foreach v,$(MAKE_ENV), --build-arg $(v)='$($(v))' )
 
 
 .PHONY: run
-run: config
-	poetry run python -m chat-manager
-
-.PHONY: config
-config:
-	$(SHELL_EXPORT) envsubst <config_template.json >config.json ;\
+run:
+	source ./bin/build-config.sh && poetry run python -m chat-manager
 
 .PHONY: watch
 watch:
-	reflex -r '\.py$\' -s -- sh -c 'make docker-logs'
+	reflex -r '\.py$\' -s -- sh -c "$(MAKE) docker-logs"
 
 .PHONY: docker-build
-docker-build: config
-	docker build $(ROOT_DIR) --tag $(DOCKER_IMAGE_DOMAIN) --file $(ROOT_DIR)/Dockerfile $(DOCKER_BUILD_ARGS)
+docker-build:
+	docker build $(ROOT_DIR) --tag $(DOCKER_IMAGE_DOMAIN) --file $(ROOT_DIR)/Dockerfile
 
 .PHONY: docker-run
 docker-run: docker-build docker-rm
-	docker run -d --name chat-manager -v $(DOCKER_MOUNT_PATH)/data:/data --restart=unless-stopped $(DOCKER_IMAGE_DOMAIN)
+	source .bin/build-config.sh && docker run -d --name chat-manager -e CONFIG -v $(DOCKER_MOUNT_PATH)/data:/data --restart=no $(DOCKER_IMAGE_DOMAIN)
 
 .PHONY: docker-rm
 docker-rm:
