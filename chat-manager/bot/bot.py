@@ -12,8 +12,7 @@ from . import crud
 
 logger = logging.getLogger('text-chat-bot')
 command_prefix=config.config['discord']['command_prefix']
-commands_channel = int(config.config['discord']['command_channel'])
-bot = commands.Bot(command_prefix=command_prefix)
+bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 
 
 def start():
@@ -53,19 +52,12 @@ async def on_ready():
 
 @bot.command()
 async def create(ctx):
-    if ctx.channel.id == commands_channel:
-        await ctx.channel.delete_messages([ctx.message])
-    else:
-        return
     await crud.create(bot, ctx.author, ctx.guild)
 
-@bot.command()
+@bot.command(hidden=True)
+@commands.has_permissions(administrator=True)
 async def delete(ctx):
     user = ctx.author
-    if ctx.channel.id == commands_channel or ctx.channel.id == data.get_channel_id(user, 'text'):
-        await ctx.channel.delete_messages([ctx.message])
-    else:
-        return
     text_id = data.get_channel_id(user, 'text')
     if text_id is None:
         await user.send(f"You're not setup!")
@@ -75,14 +67,11 @@ async def delete(ctx):
 
 @bot.command()
 async def add(ctx):
-    if ctx.channel.id == commands_channel or ctx.channel.id == data.get_channel_id(ctx.author, 'text'):
-        await ctx.channel.delete_messages([ctx.message])
-    else:
-        return
     text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))
     voice_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'voice'))
 
     if text_channel is None:
+        await create(ctx)
         await ctx.author.send(f'You do not yet have a role.')
         return
 
@@ -110,10 +99,6 @@ async def add(ctx):
 
 @bot.command()
 async def remove(ctx):
-    if ctx.channel.id == commands_channel:
-        await ctx.channel.delete_messages([ctx.message])
-    else:
-        return
     text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))
     voice_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'voice'))
 
@@ -148,3 +133,8 @@ async def add_to_channel(user, channel, channel_type):
 
 async def remove_from_channel(user, channel):
     await channel.set_permissions(user, overwrite=None)
+
+
+@bot.after_invoke
+async def after_invoke(ctx):
+    await ctx.message.delete()

@@ -4,11 +4,11 @@
     "server_id": "${SERVER_ID}",
     "target_catagory": "${CATAGORY_ID}",
     "command_channel": "${COMMAND_CHANNEL_ID}",
-    "command_prefix": "?",
+    "command_prefix": ["c/", "C/"],
     "member_role_id": "${MEMBER_ROLE_ID}"
   },
   "messages": {
-    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:\n You can add people to this channel with the `?add @person` command in #bots, and once you've added them here, you can remove them with `?remove @person`.",
+    "channel_start": "Hello OWNER! This is the beginning of your own personal text channel on this server :partying_face:\n You can add people to this channel with the `c/add @person` command in #bots, and once you've added them here, you can remove them with `c/remove @person`.",
     "user_added": "Welcome USER! to OWNER's channel :clap:"
   },
   "data": {
