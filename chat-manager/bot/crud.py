@@ -14,9 +14,6 @@ async def create(bot, user, guild):
         return
     user_category = bot.get_channel(int(config.config['discord']['target_catagory']))
     logger.info(user_category)
-    # user_category = await guild.create_category(name=f"{user}'s Space!")
-    # data.associate_channel(user, user_category, 'group')
-    # await user.add_roles(user_category)
 
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False),  # everyone
@@ -31,15 +28,12 @@ async def create(bot, user, guild):
         member_role: discord.PermissionOverwrite(view_channel=True, create_instant_invite=False, connect=False),
         user:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
     }
-    
 
-    # name = names.gen_name()
+
     topic = f'{user}\'s private channel'
     logger.info(topic)
     voice_channel = await user_category.create_voice_channel(f"{user} 🗣", topic=topic, overwrites=voice_overwrites)
-    # voice_channel.edit(sync_permissions=True)
     text_channel = await user_category.create_text_channel(f"{user} 💬", topic=topic, overwrites=overwrites)
-    # text_channel.edit(sync_permissions=True)
 
     data.associate_channel(user, channel=text_channel, channel_type='text')
     data.associate_channel(user, channel=voice_channel, channel_type='voice')

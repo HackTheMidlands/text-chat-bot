@@ -97,6 +97,34 @@ async def add(ctx):
         await user.send(message.replace('OWNER', ctx.author.display_name))
 
 
+@bot.group(name='rename')
+async def rename(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send(f'Invalid rename command passed...\nTry `{command_prefix[0]}rename text` or `{command_prefix[0]}rename voice`!')
+
+@rename.command(name='voice')
+async def rename_voice(ctx, *, name):
+    voice_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'voice'))
+    if voice_channel is None:
+        await create(ctx)
+    try:
+        await voice_channel.edit(name=name)
+    except Exception as e:
+        logger.warning(e)
+        await ctx.send('oopsies! someone who can deal with it gets to see an error now!')
+
+@rename.command(name='text')
+async def rename_text(ctx, *, name):
+    text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))
+    if text_channel is None:
+        await create(ctx)
+    try:
+        await text_channel.edit(name=name)
+    except Exception as e:
+        logger.warning(e)
+        await ctx.send('oopsies! someone who can deal with it gets to see an error now!')
+
+
 @bot.command()
 async def remove(ctx):
     text_channel = ctx.guild.get_channel(data.get_channel_id(ctx.author, 'text'))

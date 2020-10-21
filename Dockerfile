@@ -2,7 +2,7 @@ FROM python:3-alpine AS POETRY
 ADD https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py /bin/get-poetry
 
 ARG POETRY_HOME=/etc/poetry
-ARG POETRY_VERSION=1.0.5
+ARG POETRY_VERSION=1.1.2
 RUN python /bin/get-poetry
 
 WORKDIR /poetry
