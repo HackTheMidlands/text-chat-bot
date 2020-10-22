@@ -25,7 +25,7 @@ async def create(bot, user, guild):
     voice_overwrites = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False, view_channel=False),  # everyone
         guild.me:           discord.PermissionOverwrite(read_messages=True),  # the bot
-        member_role: discord.PermissionOverwrite(view_channel=True, create_instant_invite=False, connect=False),
+        member_role: discord.PermissionOverwrite(view_channel=False, create_instant_invite=False, connect=False),
         user:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
     }
 
