@@ -30,6 +30,10 @@ async def delete_all(guild):
 
 
 @bot.event
+async def on_error(event_method, *args, **kwargs):
+    logger.error(f'{event_method}, {args}, {kwargs}')
+
+@bot.event
 async def on_ready():
     global guild, target_catagory
     server_id = config.config['discord']['server_id']
@@ -63,7 +67,6 @@ async def delete(ctx):
         await user.send(f"You're not setup!")
         return
     await crud.delete(user, ctx.guild)
-
 
 @bot.command()
 async def add(ctx):
@@ -148,7 +151,6 @@ async def remove(ctx):
             return
         await remove_from_channel(user=user, channel=text_channel)
         await remove_from_channel(user=user, channel=voice_channel)
-        # await user.send(f"You have been removed from {ctx.author.display_name}'s group.")
 
 
 async def add_to_channel(user, channel, channel_type):
@@ -156,13 +158,7 @@ async def add_to_channel(user, channel, channel_type):
         await channel.set_permissions(user, read_messages=True)
     elif channel_type == 'voice':
         overwrite = discord.PermissionOverwrite()
-        overwrite.view_channel
         await channel.set_permissions(user, view_channel=True, connect=True, speak=True)
 
 async def remove_from_channel(user, channel):
     await channel.set_permissions(user, overwrite=None)
-
-
-@bot.after_invoke
-async def after_invoke(ctx):
-    await ctx.message.delete()

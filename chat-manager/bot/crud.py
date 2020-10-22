@@ -23,7 +23,7 @@ async def create(bot, user, guild):
     }
 
     voice_overwrites = {
-        guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False),  # everyone
+        guild.default_role: discord.PermissionOverwrite(read_messages=False, create_instant_invite=False, speak=False, view_channel=False),  # everyone
         guild.me:           discord.PermissionOverwrite(read_messages=True),  # the bot
         member_role: discord.PermissionOverwrite(view_channel=True, create_instant_invite=False, connect=False),
         user:          discord.PermissionOverwrite(read_messages=True, speak=True, connect=True) # the users 'group'
@@ -32,8 +32,8 @@ async def create(bot, user, guild):
 
     topic = f'{user}\'s private channel'
     logger.info(topic)
-    voice_channel = await user_category.create_voice_channel(f"{user} 🗣", topic=topic, overwrites=voice_overwrites)
-    text_channel = await user_category.create_text_channel(f"{user} 💬", topic=topic, overwrites=overwrites)
+    voice_channel = await guild.create_voice_channel(f"{user} 🗣", topic=topic, overwrites=voice_overwrites)
+    text_channel = await guild.create_text_channel(f"{user} 💬", topic=topic, overwrites=overwrites)
 
     data.associate_channel(user, channel=text_channel, channel_type='text')
     data.associate_channel(user, channel=voice_channel, channel_type='voice')
