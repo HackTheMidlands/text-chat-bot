@@ -32,6 +32,7 @@ async def delete_all(guild):
 async def on_error(event_method, *args, **kwargs):
     logger.error(f'{event_method}, {args}, {kwargs}')
 
+
 @bot.event
 async def on_ready():
     global guild, target_catagory
@@ -53,27 +54,32 @@ async def on_ready():
     # bot.add_cog(OrganiseCog(name='sort'))
     logger.info("Bot online")
 
-@bot.command(name='sort')
+
+@bot.command(name='sort', hidden=True)
 @commands.has_permissions(administrator=True)
 async def sort_chats(ctx: commands.Context):
     c: discord.CategoryChannel
     todos = list(filter(lambda x: x[0] is None, ctx.guild.by_category()))[0][1]
 
-    for chan in todos:
-        logger.info(chan)
+    for channel in todos:
+        logger.info(channel)
         cats = list(filter(lambda tup: (tup[0] is not None and tup[0].name.startswith('chats')) and len(tup[1]) < 48,
                            ctx.guild.by_category()))
+        for cat, chats in cats:
+            logger.info(f'{str(cat)}: {len(chats)}')
         if len(cats) > 0:
             cat = cats[0]
-            logger.info(f'moving {str(chan)} to {str(cat[0])}')
-            await chan.edit(category=cat[0])
+            logger.info(f'moving {str(channel)} to {str(cat)}')
+            await channel.edit(category=cat)
         else:
+            logger.info('creating new category')
             new_cat = await ctx.guild.create_category(
-                name=str(len(list(filter(lambda tup: tup[0] is not None and tup[0].name.startswith('chats'))))))
-            logger.info(f'moving {str(chan)} to {str(new_cat)}')
-            chan.edit(category=new_cat)
+                name=str(len(list(filter(lambda tup: tup[0] is not None and tup[0].name.startswith('chats'),
+                                         ctx.guild.by_category())))))
+            logger.info(f'moving {str(channel)} to {str(new_cat)}')
+            channel.edit(category=new_cat)
 
-        await ctx.send(chan)
+        await ctx.send(channel)
 
 
 @bot.command()
