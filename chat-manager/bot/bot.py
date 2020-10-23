@@ -65,11 +65,12 @@ async def sort_chats(ctx: commands.Context):
                            ctx.guild.by_category()))
         if len(cats) > 0:
             cat = cats[0]
+            logger.info(f'moving {str(chan)} to {str(cat[0])}')
             await chan.edit(category=cat[0])
         else:
-            guild: discord.Guild = ctx.guild
-            new_cat = await guild.create_category(
+            new_cat = await ctx.guild.create_category(
                 name=str(len(list(filter(lambda tup: tup[0] is not None and tup[0].name.startswith('chats'))))))
+            logger.info(f'moving {str(chan)} to {str(new_cat)}')
             chan.edit(category=new_cat)
 
         await ctx.send(chan)
