@@ -1,17 +1,16 @@
 import logging
+
 import discord
 from discord.ext import commands
 
+from . import crud
 from ..util import config
 from ..util import data
 from ..util.log import fatal_error
-from . import lookup
-from . import names
-from . import crud
 
 
 logger = logging.getLogger('text-chat-bot')
-command_prefix=config.config['discord']['command_prefix']
+command_prefix = config.config['discord']['command_prefix']
 bot = commands.Bot(command_prefix=command_prefix, case_insensitive=True)
 
 
@@ -51,7 +50,29 @@ async def on_ready():
     except:
         fatal_error(f'Cannot catagory \'{target_catagory_id}\'')
 
+    # bot.add_cog(OrganiseCog(name='sort'))
     logger.info("Bot online")
+
+@bot.command(name='sort')
+@commands.has_permissions(administrator=True)
+async def sort_chats(ctx: commands.Context):
+    c: discord.CategoryChannel
+    todos = list(filter(lambda x: x[0] is None, ctx.guild.by_category()))[0][1]
+
+    for chan in todos:
+        logger.info(chan)
+        cats = list(filter(lambda tup: (tup[0] is not None and tup[0].name.startswith('chats')) and len(tup[1]) < 48,
+                           ctx.guild.by_category()))
+        if len(cats) > 0:
+            cat = cats[0]
+            await chan.edit(category=cat[0])
+        else:
+            guild: discord.Guild = ctx.guild
+            new_cat = await guild.create_category(
+                name=str(len(list(filter(lambda tup: tup[0] is not None and tup[0].name.startswith('chats'))))))
+            chan.edit(category=new_cat)
+
+        await ctx.send(chan)
 
 
 @bot.command()
@@ -103,7 +124,8 @@ async def add(ctx):
 @bot.group(name='rename')
 async def rename(ctx):
     if ctx.invoked_subcommand is None:
-        await ctx.send(f'Invalid rename command passed...\nTry `{command_prefix[0]}rename text` or `{command_prefix[0]}rename voice`!')
+        await ctx.send(
+            f'Invalid rename command passed...\nTry `{command_prefix[0]}rename text` or `{command_prefix[0]}rename voice`!')
 
 @rename.command(name='voice')
 async def rename_voice(ctx, *, name):
